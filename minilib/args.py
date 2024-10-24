@@ -3,6 +3,7 @@ import logging
 import os
 import string
 import sys
+import minilib.log
 
 class PwnlibArgs(collections.defaultdict):
     def __getattr__(self, attr):
@@ -28,7 +29,7 @@ def isident(s):
     return True
 
 def DEBUG(x):
-    minitools.log.verbose = True
+    minilib.log.verbose = True
 
 hooks = {
     'DEBUG': DEBUG,

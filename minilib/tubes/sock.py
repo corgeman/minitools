@@ -2,8 +2,8 @@ import errno
 import select
 import socket
 
-from minitools.tubes.tube import tube
-import minitools.log as log
+from minilib.tubes.tube import tube
+import minilib.log as log
 
 class sock(tube):
     def __init__(self, *args, **kwargs):
@@ -58,6 +58,9 @@ class sock(tube):
             else:
                 raise
 
+    def settimeout(self, timeout):
+        self.timeout = timeout
+
     def settimeout_raw(self, timeout):
         sock = getattr(self, 'sock', None)
         if sock:
@@ -96,7 +99,7 @@ class sock(tube):
         self._close_msg()
 
     def _close_msg(self):
-        log.info('Closed connection to %s port %s', self.rhost, self.rport)
+        log.info('Closed connection to %s port %s' % (self.rhost, self.rport))
 
     def fileno(self):
         if not self.sock:
@@ -140,9 +143,9 @@ class sock(tube):
         elif fam.lower() in ['ipv6', 'ip6', 'v6', '6']:
             fam = socket.AF_INET6
         else:
-            log.error("%s(): socket family %r is not supported",
-                       cls.__name__,
-                       fam)
+            log.error("%s(): socket family %r is not supported" %
+                       (cls.__name__,
+                       fam))
 
         return fam
 
@@ -153,8 +156,8 @@ class sock(tube):
         elif typ == "udp":
             typ = socket.SOCK_DGRAM
         else:
-            log.error("%s(): socket type %r is not supported",
-                       cls.__name__,
-                       typ)
+            log.error("%s(): socket type %r is not supported" % 
+                       (cls.__name__,
+                       typ))
 
         return typ

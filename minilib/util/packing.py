@@ -4,7 +4,7 @@ import struct
 import sys
 import warnings
 
-from minitools.context import context
+from minilib.context import context
 import itertools
 
 mod = sys.modules[__name__]
@@ -113,6 +113,75 @@ def _fit(pieces, preprocessor, packer, filler, stacklevel=1):
 
     return filler, out_negative + out
 
+def pack(number, word_size = None, endianness = None, sign = None, **kwargs):
+    if sign is None and number < 0:
+        sign = True
+
+    if word_size != 'all':
+        kwargs.setdefault('word_size', word_size)
+
+    kwargs.setdefault('endianness', endianness)
+    kwargs.setdefault('sign', sign)
+
+    with context.local(**kwargs):
+        # Lookup in context if not found
+        word_size  = 'all' if word_size == 'all' else context.word_size
+        endianness = context.endianness
+        sign       = context.sign
+
+        assert isinstance(number, (int,))
+
+        assert isinstance(sign, bool)
+
+        assert endianness in ['little', 'big']
+
+        # Verify that word_size make sense
+        if word_size == 'all':
+            if number == 0:
+                word_size = 8
+            elif number > 0:
+                if sign:
+                    word_size = (number.bit_length() | 7) + 1
+                else:
+                    word_size = ((number.bit_length() - 1) | 7) + 1
+            else:
+                if not sign:
+                    raise ValueError("pack(): number does not fit within word_size")
+                word_size = ((number + 1).bit_length() | 7) + 1
+        assert (isinstance(word_size, (int,)) or word_size <= 0)
+
+        if sign:
+            limit = 1 << (word_size-1)
+            if not -limit <= number < limit:
+                raise ValueError("pack(): number does not fit within word_size")
+        else:
+            limit = 1 << word_size
+            if not 0 <= number < limit:
+                raise ValueError("pack(): number does not fit within word_size [%i, %r, %r]" % (0, number, limit))
+
+        # Normalize number and size now that we have verified them
+        # From now on we can treat positive and negative numbers the same
+        number = number & ((1 << word_size) - 1)
+        byte_size = (word_size + 7) // 8
+
+        out = []
+
+        for _ in range(byte_size):
+            out.append(p8(number & 0xff))
+            number = number >> 8
+
+        if endianness == 'little':
+            return b''.join(out)
+        else:
+            return b''.join(reversed(out))
+
+def make_packer(word_size = None, sign = None, **kwargs):
+    with context.local(sign=sign, **kwargs):
+        word_size  = word_size or context.word_size
+        endianness = context.endianness
+        sign       = sign if sign is None else context.sign
+        return lambda number: pack(number, word_size, endianness, sign)
+
 def _flat(args, preprocessor, packer, filler, stacklevel=1):
     out = []
     for arg in args:
@@ -150,7 +219,7 @@ def _flat(args, preprocessor, packer, filler, stacklevel=1):
 
 def flat(*args, **kwargs):
     # HACK: To avoid circular imports we need to delay the import of `cyclic`
-    from minitools.util import cyclic
+    from minilib.util import cyclic
 
     preprocessor = kwargs.pop('preprocessor', lambda x: None)
     filler       = kwargs.pop('filler', cyclic.de_bruijn())

@@ -3,7 +3,7 @@ import threading
 import traceback
 import atexit as std_atexit
 
-from minitools.context import context
+from minilib.context import context
 
 __all__ = ['register', 'unregister']
 

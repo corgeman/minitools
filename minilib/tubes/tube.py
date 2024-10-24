@@ -9,12 +9,12 @@ import sys
 import threading
 import time
 
-from minitools import atexit
-from minitools.context import context
-import minitools.log as log
-from minitools.timeout import Timeout
-from minitools.tubes.buffer import Buffer
-from minitools.util import packing
+from minilib import atexit
+from minilib.context import context
+import minilib.log as log
+from minilib.timeout import Timeout
+from minilib.tubes.buffer import Buffer
+from minilib.util import packing
 
 
 class tube(Timeout):

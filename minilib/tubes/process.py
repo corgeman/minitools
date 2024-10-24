@@ -20,13 +20,13 @@ import pty
 import resource
 import tty
 
-from minitools.context import context
-from minitools.timeout import Timeout
-from minitools.tubes.tube import tube
-from minitools.util.misc import which
-from minitools.util.misc import normalize_argv_env
-from minitools.util.packing import _decode
-import minitools.log as log
+from minilib.context import context
+from minilib.timeout import Timeout
+from minilib.tubes.tube import tube
+from minilib.util.misc import which
+from minilib.util.misc import normalize_argv_env
+from minilib.util.packing import _decode
+import minilib.log as log
 
 class PTY(object): pass
 PTY=PTY()
@@ -176,7 +176,7 @@ class process(tube):
                     raise
                 prefixes.append(self.__on_enoexec(exception))
 
-        log.info("process spawned")
+        log.info("Process opened!")
         if self.pty is not None:
             if stdin is slave:
                 self.proc.stdin = os.fdopen(os.dup(master), 'r+b', 0)
@@ -608,36 +608,6 @@ class process(tube):
         raise Exception("Sorry, maps() is not implemented due to needing 'psutil'")
 
     def get_mapping(self, path_value, single=True):
-        """get_mapping(path_value, single=True) -> mapping
-        get_mapping(path_value, False) -> [mapping]
-
-        Arguments:
-            path_value(str): The exact path of the requested mapping,
-                valid values are also [stack], [heap], etc..
-            single(bool=True): Whether to only return the first
-                mapping matched, or all of them.
-
-        Returns found mapping(s) in process memory according to 
-        path_value.
-
-        Example:
-            
-            >>> p = process(['cat'])
-            >>> mapping = p.get_mapping('[stack]')
-            >>> mapping.path == '[stack]'
-            True
-            >>> mapping.perms.execute
-            False
-            >>>
-            >>> mapping = p.get_mapping('does not exist')
-            >>> print(mapping)
-            None
-            >>>
-            >>> mappings = p.get_mapping(which('cat'), single=False)
-            >>> len(mappings) > 1
-            True
-
-        """
         all_maps = self.maps()
 
         if single:
@@ -655,29 +625,13 @@ class process(tube):
 
     @property
     def libc(self):
-        """libc() -> ELF
-
-        Returns an ELF for the libc for the current process.
-        If possible, it is adjusted to the correct address
-        automatically.
-
-        Example:
-
-        >>> p = process("/bin/cat")
-        >>> libc = p.libc
-        >>> libc # doctest: +SKIP
-        ELF('/lib64/libc-...so')
-        >>> p.close()
-        """
         raise Exception(".libc is not implemented")
 
 
     @property
     def elf(self):
-        raise Exception("ELF is not implemented")
-
-
-
+        import minilib.elf.elf
+        return minilib.elf.elf.ELF(self.executable)
 
     @property
     def stdin(self):

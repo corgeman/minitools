@@ -15,7 +15,7 @@ import threading
 import time
 
 
-from minitools.timeout import Timeout
+from minilib.timeout import Timeout
 
 def _longest(d):
     return collections.OrderedDict((k,d[k]) for k in sorted(d, key=len, reverse=True))
@@ -113,7 +113,7 @@ class ContextType(object):
         'arch': 'amd64',
         'aslr': True,
         'binary': None,
-        'bits': 64,
+        'bits': 32,
         'buffer_size': 4096,
         'cache_dir_base': os.environ.get(
             'XDG_CACHE_HOME',
@@ -356,7 +356,18 @@ class ContextType(object):
 
     @_validator
     def binary(self, binary):
-        raise Exception("Sorry, context.binary does not work-- would need to import the ELF parser")
+        from minilib.elf.elf import ELF
+        # print(binary)
+
+        if not isinstance(binary, ELF):
+            binary = ELF(binary)
+
+        # self.arch   = binary.arch
+        self.bits   = binary.bits
+        self.endian = binary.endianness
+        # self.os     = 
+
+        return binary
 
     @property
     def bytes(self):
@@ -408,7 +419,7 @@ class ContextType(object):
     def log_file(self, value):
         if isinstance(value, (bytes, str)):
             # check if mode was specified as "[value],[mode]"
-            from minitools.util.packing import _need_text
+            from minilib.util.packing import _need_text
             value = _need_text(value)
             if ',' not in value:
                 value += ',a'
@@ -639,7 +650,7 @@ class ContextType(object):
     @_validator
     def newline(self, v):
         # circular imports
-        from minitools.util.packing import _need_bytes
+        from minilib.util.packing import _need_bytes
         return _need_bytes(v)
     
     @_validator

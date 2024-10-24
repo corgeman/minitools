@@ -1,5 +1,5 @@
-from minitools.util import packing
-import minitools.log as log
+from minilib.util import packing
+import minilib.log as log
 import sys, stat, os
 
 def which(name, all = False, path=None):

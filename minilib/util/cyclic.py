@@ -1,9 +1,9 @@
 import string
 
-from minitools.context import context
-import minitools.log as log
+from minilib.context import context
+import minilib.log as log
 import itertools
-from minitools.util import packing
+from minilib.util import packing
 
 
 
@@ -49,7 +49,7 @@ def cyclic(length = None, alphabet = None, n = None):
                   length, len(alphabet), n)
 
     generator = de_bruijn(alphabet, n)
-    out = iters.take(length, generator)
+    out = take(length, generator)
 
     return _join_sequence(out, alphabet)
 
