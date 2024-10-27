@@ -1,3 +1,6 @@
 __pycache__/
 *.py[cod]
+minitools.zip
+# i run some internal tests, might eventually make public
+tests/
 
